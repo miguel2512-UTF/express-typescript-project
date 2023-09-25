@@ -1,4 +1,4 @@
-import { Repo } from "../types"
+import { Languages, Repo } from "../types"
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -10,7 +10,7 @@ const authHeaders = {
     Authorization: `Bearer ${PERSONAL_ACCESS_TOKEN}`
 }
 
-export const getReposOfUser = async (username: string): Promise<Repo[]> => {
+export const getReposByUser = async (username: string): Promise<Repo[]> => {
     try {
         const res = await fetch(`${GITHUB_API_URL}/users/${username}/repos`, {
             headers: authHeaders
@@ -23,7 +23,7 @@ export const getReposOfUser = async (username: string): Promise<Repo[]> => {
     }
 }
 
-export const getLanguagesOfRepo = async (repo: string, owner: string): Promise<Object> => {
+export const getLanguagesByRepo = async (repo: string, owner: string): Promise<Languages> => {
     try {
         const res = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/languages`, {
             headers: authHeaders

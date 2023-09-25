@@ -3,6 +3,10 @@ export interface Repo {
     html_url: string
     description: string
     language: string
-    languages: Object
+    languages: string
     homepage: string
+}
+
+export type Languages =  {
+    [language: string]: number
 }
