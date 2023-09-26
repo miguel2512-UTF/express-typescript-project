@@ -2,17 +2,13 @@ import express from 'express'
 import { getLanguagesByRepo, getReposByUser } from '../services/githubApiService'
 import { Repo } from '../types'
 import { GITHUB_USER } from '../../settings'
-import { createRepo, getRepos } from '../services/repoService'
+import { createRepo, deleteAllRepos, getRepos } from '../services/repoService'
 
 const router = express.Router()
 
 router.get("/", async (_req, res) => {
     const repos = await getRepos()
     
-    repos.forEach(repo => { 
-        repo.languages = JSON.parse(repo.languages)
-    })
-
     res.status(200).json({
         success: true,
         length: repos.length,
@@ -21,6 +17,16 @@ router.get("/", async (_req, res) => {
 })
 
 router.get("/refresh", async (_req, res) => {
+    const deleteRepos = await deleteAllRepos()
+
+    if (!deleteRepos) {
+        res.status(500).json({
+            success: false,
+            message: "Something went wrong"
+        })
+        return
+    } 
+
     const repos = await getReposByUser(GITHUB_USER)
 
     for (const { name, html_url, description, language, homepage } of repos) {

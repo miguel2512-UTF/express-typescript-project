@@ -10,6 +10,10 @@ export const getRepos = (): Promise<Repo[]> => {
                 reject(err)
             }
 
+            data.forEach(repo => { 
+                repo.languages = JSON.parse(repo.languages)
+            })
+
             resolve(data)
         })
     })
@@ -22,5 +26,17 @@ export const createRepo = (repo: Repo): Promise<boolean> => {
         })
 
         resolve(true)
+    })
+}
+
+export const deleteAllRepos = (): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+        db.run("DELETE FROM repository", (err) => {
+            if (err) {
+                reject(err)
+            }
+
+            resolve(true)
+        })
     })
 }

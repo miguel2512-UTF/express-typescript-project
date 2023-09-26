@@ -13,6 +13,7 @@ const db = new sqlite3.Database(path.join(ROOT_DIR, "db.sqlite3"), (err) => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name text,
             url text, 
+            image_url text,
             description text, 
             language text,
             languages text,
