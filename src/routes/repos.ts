@@ -16,22 +16,6 @@ router.get("/", async (_req, res) => {
     })
 })
 
-router.get("/:name", async (req, res) => {
-    const repoName = req.params.name
-
-    const repo = await getRepoByName(repoName)
-
-    if (!repo) {
-        res.status(404).json({
-            message: "Repository not found"
-        })
-
-        return
-    }
-
-    res.status(200).json(repo)
-})
-
 router.get("/refresh", async (_req, res) => {
     const deleteRepos = await deleteAllRepos()
 
@@ -48,7 +32,7 @@ router.get("/refresh", async (_req, res) => {
     for (const { name, html_url, description, language, homepage } of repos) {
         const mapRepo: Repo = {
             name,
-            html_url,
+            url: html_url,
             description,
             language,
             languages: JSON.stringify(await getLanguagesByRepo(name, GITHUB_USER)),
@@ -61,6 +45,22 @@ router.get("/refresh", async (_req, res) => {
         success: true,
         reposCount: repos.length
     })
+})
+
+router.get("/:name", async (req, res) => {
+    const repoName = req.params.name
+
+    const repo = await getRepoByName(repoName)
+
+    if (!repo) {
+        res.status(404).json({
+            message: "Repository not found"
+        })
+
+        return
+    }
+
+    res.status(200).json(repo)
 })
 
 export default router

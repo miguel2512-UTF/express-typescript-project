@@ -1,59 +1,50 @@
-import db from "../db/connect"
+import { PrismaClient } from "@prisma/client"
 import { Repo } from "../types"
 
-export const getRepos = (): Promise<Repo[]> => {
-    return new Promise((resolve, reject) => {
-        const sql = "SELECT * FROM repository"
+const prisma = new PrismaClient()
 
-        db.all(sql, (err, data: Repo[]) => {
-            if (err) {
-                reject(err)
-            }
+export const getRepos = async (): Promise<Repo[]> => {
+    const repos = await prisma.repository.findMany()
 
-            data.forEach(repo => { 
-                repo.languages = JSON.parse(repo.languages)
-            })
+    repos.forEach((repo: Repo) => {
+        repo.languages = JSON.parse(repo.languages)
+    }); 
 
-            resolve(data)
-        })
+    return repos
+}
+
+export const getRepoByName = async (name: string): Promise<Repo | null> => {
+    const repo = await prisma.repository.findFirst({
+        where: {
+            name: name
+        }
+    })
+    
+    if (repo != null) {
+        repo.languages = JSON.parse(repo.languages)
+    }
+
+    return repo
+}
+
+export const createRepo = async (repo: Repo): Promise<Repo> => {
+    return await prisma.repository.create({
+        data: {
+            name: repo.name,
+            description: repo.description,
+            url: repo.url,
+            language: repo.language,
+            languages: repo.languages,
+            homepage: repo.homepage
+        }
     })
 }
 
-export const getRepoByName = (name: string): Promise<Repo | null> => {
-    return new Promise((resolve, reject) => {
-        db.get("SELECT * FROM repository WHERE name = ?", [name], (err, data: Repo) => {
-            if (err) {
-                reject(err)
-            }
-
-            if (data) {
-                data.languages = JSON.parse(data.languages)
-                resolve(data)
-            }
-
-            resolve(null)
-        })
-    })
-}
-
-export const createRepo = (repo: Repo): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        db.run("INSERT INTO repository (name, url, description, language, languages, homepage) VALUES (?, ?, ?, ?, ?, ?)", [repo.name, repo.html_url, repo.description, repo.language, repo.languages, repo.homepage], (err) => {
-            reject(err)
-        })
-
-        resolve(true)
-    })
-}
-
-export const deleteAllRepos = (): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        db.run("DELETE FROM repository", (err) => {
-            if (err) {
-                reject(err)
-            }
-
-            resolve(true)
-        })
-    })
+export const deleteAllRepos = async (): Promise<boolean> => {
+    try {
+        await prisma.repository.deleteMany()
+        return true
+    } catch (error) {
+        return false
+    }
 }
