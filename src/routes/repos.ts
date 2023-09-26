@@ -2,18 +2,34 @@ import express from 'express'
 import { getLanguagesByRepo, getReposByUser } from '../services/githubApiService'
 import { Repo } from '../types'
 import { GITHUB_USER } from '../../settings'
-import { createRepo, deleteAllRepos, getRepos } from '../services/repoService'
+import { createRepo, deleteAllRepos, getRepoByName, getRepos } from '../services/repoService'
 
 const router = express.Router()
 
 router.get("/", async (_req, res) => {
     const repos = await getRepos()
-    
+
     res.status(200).json({
         success: true,
         length: repos.length,
         data: repos
     })
+})
+
+router.get("/:name", async (req, res) => {
+    const repoName = req.params.name
+
+    const repo = await getRepoByName(repoName)
+
+    if (!repo) {
+        res.status(404).json({
+            message: "Repository not found"
+        })
+
+        return
+    }
+
+    res.status(200).json(repo)
 })
 
 router.get("/refresh", async (_req, res) => {

@@ -19,6 +19,23 @@ export const getRepos = (): Promise<Repo[]> => {
     })
 }
 
+export const getRepoByName = (name: string): Promise<Repo | null> => {
+    return new Promise((resolve, reject) => {
+        db.get("SELECT * FROM repository WHERE name = ?", [name], (err, data: Repo) => {
+            if (err) {
+                reject(err)
+            }
+
+            if (data) {
+                data.languages = JSON.parse(data.languages)
+                resolve(data)
+            }
+
+            resolve(null)
+        })
+    })
+}
+
 export const createRepo = (repo: Repo): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         db.run("INSERT INTO repository (name, url, description, language, languages, homepage) VALUES (?, ?, ?, ?, ?, ?)", [repo.name, repo.html_url, repo.description, repo.language, repo.languages, repo.homepage], (err) => {
