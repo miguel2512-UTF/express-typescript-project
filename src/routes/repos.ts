@@ -2,7 +2,7 @@ import express from 'express'
 import { getLanguagesByRepo, getReposByUser } from '../services/githubApiService'
 import { Repo } from '../types'
 import { GITHUB_USER } from '../../settings'
-import { createRepo, deleteAllRepos, getRepoByName, getRepos } from '../services/repoService'
+import { createRepo, deleteAllRepos, getRepoByName, getRepos, updateRepo } from '../services/repoService'
 
 const router = express.Router()
 
@@ -61,6 +61,29 @@ router.get("/:name", async (req, res) => {
     }
 
     res.status(200).json(repo)
+})
+
+router.put("/:name", async (req, res) => {
+    const repoName = req.params.name
+    const repo = await getRepoByName(repoName)
+
+    if (!repo) {
+        return res.status(404).json({
+            success: false,
+            message: "Repository not found"
+        })
+    }
+
+    const updatedRepo = await updateRepo({
+        ...req.body,
+        id: repo.id
+    })
+
+    return res.status(200).json({
+        success: false,
+        message: "Repository updated successfully",
+        data: updatedRepo
+    })
 })
 
 export default router

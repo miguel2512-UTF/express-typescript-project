@@ -40,6 +40,15 @@ export const createRepo = async (repo: Repo): Promise<Repo> => {
     })
 }
 
+export const updateRepo = async (repo: Repo): Promise<Repo> => {
+    return await prisma.repository.update({
+        where: {
+            id: repo.id
+        },
+        data: repo
+    })
+}
+
 export const deleteAllRepos = async (): Promise<boolean> => {
     try {
         await prisma.repository.deleteMany()
