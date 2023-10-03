@@ -1,8 +1,11 @@
 import express from 'express'
 import { getLanguagesByRepo, getReposByUser } from '../services/githubApiService'
 import { Repo } from '../types'
-import { GITHUB_USER } from '../../settings'
+import { GITHUB_USER, PUBLIC_FOLDER, REPO_IMAGES_FOLDER } from '../../settings'
 import { createRepo, deleteAllRepos, getRepoByName, getRepos, updateRepo } from '../services/repoService'
+import formidable from 'formidable'
+import path from 'path'
+import fs from 'fs/promises'
 
 const router = express.Router()
 
@@ -83,6 +86,46 @@ router.put("/:name", async (req, res) => {
         success: false,
         message: "Repository updated successfully",
         data: updatedRepo
+    })
+})
+
+router.post("/fileupload", async (req, res) => {
+    const form = formidable({})
+    
+    let fields
+    let files
+
+    try {
+        [ fields, files ] = await form.parse(req)
+    } catch (error) {
+        console.log(error);
+        res.json({
+            success: false,
+            message: "Error uploading image"
+        })
+        return
+    }
+
+    const oldpath = files?.image_url?.[0].filepath ?? ""
+    const newpath = path.join(REPO_IMAGES_FOLDER, files?.image_url?.[0].originalFilename ?? "")
+
+    try {
+        await fs.mkdir(PUBLIC_FOLDER)
+    } catch (err) {
+        console.log(err);
+    }
+    
+    try {
+        await fs.mkdir(REPO_IMAGES_FOLDER)
+    } catch (err) {
+        console.log(err);
+    }
+    
+    await fs.rename(oldpath, newpath)
+
+    res.json({
+        success: true,
+        image_url: files?.image_url?.[0].originalFilename
     })
 })
 
