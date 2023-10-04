@@ -14,7 +14,7 @@ model Repository {
   id Int @id @default(autoincrement())
   name String @unique
   url String
-  image_url String?
+  image String?
   description String?
   language String?
   languages String

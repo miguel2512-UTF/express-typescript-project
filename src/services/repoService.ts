@@ -41,6 +41,8 @@ export const createRepo = async (repo: Repo): Promise<Repo> => {
 }
 
 export const updateRepo = async (repo: Repo): Promise<Repo> => {
+    repo.languages = JSON.stringify(repo.languages)
+    
     return await prisma.repository.update({
         where: {
             id: repo.id

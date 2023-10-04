@@ -11,7 +11,7 @@ export interface Repo {
     id?: number
     name: string
     url: string
-    image_url?: string | null
+    image?: string | null
     description?: string | null
     language?: string | null
     languages: string

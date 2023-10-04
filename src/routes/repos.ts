@@ -1,7 +1,7 @@
 import express from 'express'
 import { getLanguagesByRepo, getReposByUser } from '../services/githubApiService'
 import { Repo } from '../types'
-import { GITHUB_USER, PUBLIC_FOLDER, REPO_IMAGES_FOLDER } from '../../settings'
+import { ACCEPTED_IMAGES_EXTENSIONS, GITHUB_USER, PUBLIC_FOLDER, REPO_IMAGES_FOLDER } from '../../settings'
 import { createRepo, deleteAllRepos, getRepoByName, getRepos, updateRepo } from '../services/repoService'
 import formidable from 'formidable'
 import path from 'path'
@@ -28,7 +28,7 @@ router.get("/refresh", async (_req, res) => {
             message: "Something went wrong"
         })
         return
-    } 
+    }
 
     const repos = await getReposByUser(GITHUB_USER)
 
@@ -89,16 +89,16 @@ router.put("/:name", async (req, res) => {
     })
 })
 
-router.post("/fileupload", async (req, res) => {
+router.post("/image/:name", async (req, res) => {
+    const repoName = req.params.name
     const form = formidable({})
-    
+
     let fields
     let files
 
     try {
-        [ fields, files ] = await form.parse(req)
+        [fields, files] = await form.parse(req)
     } catch (error) {
-        console.log(error);
         res.json({
             success: false,
             message: "Error uploading image"
@@ -106,27 +106,74 @@ router.post("/fileupload", async (req, res) => {
         return
     }
 
-    const oldpath = files?.image_url?.[0].filepath ?? ""
-    const newpath = path.join(REPO_IMAGES_FOLDER, files?.image_url?.[0].originalFilename ?? "")
+    if (!Object.keys(files).length) {
+        res.status(400).json({
+            success: false,
+            message: "Image is required"
+        })
+        return
+    }
 
+    if (Object.keys(files)[0] != "image" || !files.image?.length) {
+        res.status(400).json({
+            success: false,
+            message: "Image must be provided like field name: image"
+        })
+        return
+    }
+
+    const filenameToArray = files.image[0].originalFilename?.split(".") as string[]
+    const fileExtension = filenameToArray[filenameToArray.length - 1]
+    const filename = files.image[0].newFilename?.replace(`.${fileExtension}`, "")
+
+    if (!ACCEPTED_IMAGES_EXTENSIONS.find(el => fileExtension === el)) {
+        res.status(400).json({
+            success: false,
+            message: `Wrong image format. The accepted formats are: ${ACCEPTED_IMAGES_EXTENSIONS.join(", ")}`
+        })
+        return
+    }
+
+    const oldpath = files.image[0].filepath
+    const newpath = path.join(REPO_IMAGES_FOLDER, `${filename}.${fileExtension}`)
+
+    await createRepoImagesFolder()
+
+    await fs.rename(oldpath, newpath)
+
+    const repo = await getRepoByName(repoName)
+
+    if (!repo) {
+        res.status(404).json({
+            success: false,
+            message: "Repository not found"
+        })
+        return
+    }
+
+    repo.image = filename + "." + fileExtension
+    await updateRepo(repo)
+
+    res.json({
+        success: true,
+        filename: filename,
+        extension: fileExtension,
+        image: filename + "." + fileExtension
+    })
+})
+
+async function createRepoImagesFolder() {
     try {
         await fs.mkdir(PUBLIC_FOLDER)
     } catch (err) {
         console.log(err);
     }
-    
+
     try {
         await fs.mkdir(REPO_IMAGES_FOLDER)
     } catch (err) {
         console.log(err);
     }
-    
-    await fs.rename(oldpath, newpath)
-
-    res.json({
-        success: true,
-        image_url: files?.image_url?.[0].originalFilename
-    })
-})
+}
 
 export default router
