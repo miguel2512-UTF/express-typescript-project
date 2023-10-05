@@ -42,10 +42,13 @@ export const createRepo = async (repo: Repo): Promise<Repo> => {
 
 export const updateRepo = async (repo: Repo): Promise<Repo> => {
     repo.languages = JSON.stringify(repo.languages)
+
+    const id = repo.id
+    delete repo.id
     
     return await prisma.repository.update({
         where: {
-            id: repo.id
+            id
         },
         data: repo
     })

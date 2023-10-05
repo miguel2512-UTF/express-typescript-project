@@ -15,6 +15,7 @@ model Repository {
   name String @unique
   url String
   image String?
+  image_url String?
   description String?
   language String?
   languages String

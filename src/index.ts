@@ -1,5 +1,7 @@
 import express from 'express'
 import repoRouter from './routes/repos'
+import publicRouter from './routes/public'
+import { PORT } from '../settings'
 
 const app = express()
 
@@ -10,14 +12,14 @@ app.use((req, _res, next) => {
     next()
 })
 
-const PORT = 3000
-
 app.get("/", (_req, res) => {
     console.log("hello world");
     res.send("Hi!")
 })
 
 app.use("/api/repos", repoRouter)
+
+app.use("/public", publicRouter)
 
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);

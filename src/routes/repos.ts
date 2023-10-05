@@ -1,7 +1,7 @@
 import express from 'express'
 import { getLanguagesByRepo, getReposByUser } from '../services/githubApiService'
 import { Repo } from '../types'
-import { ACCEPTED_IMAGES_EXTENSIONS, GITHUB_USER, PUBLIC_FOLDER, REPO_IMAGES_FOLDER } from '../../settings'
+import { ACCEPTED_IMAGES_EXTENSIONS, DEV_DOMAIN, GITHUB_USER, PUBLIC_FOLDER, REPO_IMAGES_FOLDER } from '../../settings'
 import { createRepo, deleteAllRepos, getRepoByName, getRepos, updateRepo } from '../services/repoService'
 import formidable from 'formidable'
 import path from 'path'
@@ -152,6 +152,8 @@ router.post("/image/:name", async (req, res) => {
     }
 
     repo.image = filename + "." + fileExtension
+
+    repo.image_url = `${DEV_DOMAIN}/public/repo/images/${repo.image}`
     await updateRepo(repo)
 
     res.json({
