@@ -7,3 +7,5 @@ export const GITHUB_USER = "miguel2512-UTF"
 export const ACCEPTED_IMAGES_EXTENSIONS = ["jpg", "png"]
 export const PORT = 3000
 export const DEV_DOMAIN = "localhost:" + PORT
+export const PROD_DOMAIN = ""
+export const DOMAIN = DEV_DOMAIN
